@@ -1,0 +1,48 @@
+pipeline
+{
+    agent any
+    environment 
+    {
+        VERSION = 'latest'
+        PROJECT = 'maven_sample'
+        IMAGE = 'maven_sample:latest'
+        ECRURL = 'http://188367751657.dkr.ecr.ap-south-1.amazonaws.com'
+        ECRCRED = 'ecr:ap-south-1:new-jenkins'
+    }
+    stages
+    {
+        stage('Build') 
+		{
+            steps {
+                mvn clean install 
+            }
+        }
+    }
+        stage('Docker build')
+        {
+            steps
+            {
+                script
+                {
+                    // Build the docker image using a Dockerfile
+                   	docker build -t new-jenkins .
+                }
+            }
+        }
+        stage('Docker push')
+        {
+            steps
+            {
+                script
+                {
+					docker push 188367751657.dkr.ecr.ap-south-1.amazonaws.com/new-jenkins:latest
+                    // Push the Docker image to ECR
+                    docker.withRegistry(ECRURL, ECRCRED)
+                    {
+                        //docker.image(IMAGE).push()
+                    }
+                }
+            }
+        }
+    }
+} 
